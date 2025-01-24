@@ -23,7 +23,7 @@ numLuigi = 1
 numMario = 150
 numWario = 75
 numYoshi = 50
-msBetweenFrames = 15
+msBetweenFrames = 10 # has an effect on speed
 
 # creates place for balls to bounce within the window
 canvas = tk.Canvas(window, width=width, height=height)
@@ -105,7 +105,8 @@ class Yoshi(Ball):
         yoshi_width = images["yoshi"]["width"]
         yoshi_height = images["yoshi"]["height"]
         super().__init__(canvas, x, y, hspd, vspd, yoshi_image, yoshi_width, yoshi_height)
-# make space for some balls lol 
+        
+# balls lol 
 balls = []
 
 # create balls for each character
