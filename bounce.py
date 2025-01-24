@@ -18,8 +18,10 @@ window.iconbitmap(resource_path("myicon.ico"))
 # size variables, change to whatever
 width = 480
 height = 480
-numMario = 10
 numLuigi = 1
+numMario = 50
+numWario = 50
+numYoshi = 30
 msBetweenFrames = 15
 
 # creates place for balls to bounce within the window
@@ -34,6 +36,12 @@ images = {
     },
     "luigi": {
         "image": tk.PhotoImage(file=resource_path("luigi.png")),
+    },
+    "wario": {
+        "image": tk.PhotoImage(file=resource_path("wario.png")),
+    },
+    "yoshi": {
+        "image": tk.PhotoImage(file=resource_path("yoshi.png")),
     }
 }
 
@@ -83,6 +91,19 @@ class Luigi(Ball):
         luigi_height = images["luigi"]["height"]
         super().__init__(canvas, x, y, hspd, vspd, luigi_image, luigi_width, luigi_height)
 
+class Wario(Ball):
+    def __init__(self, canvas, x, y, hspd, vspd):
+        wario_image = images["wario"]["image"]
+        wario_width = images["wario"]["width"]
+        wario_height = images["wario"]["height"]
+        super().__init__(canvas, x, y, hspd, vspd, wario_image, wario_width, wario_height)
+
+class Yoshi(Ball):
+    def __init__(self, canvas, x, y, hspd, vspd):
+        yoshi_image = images["yoshi"]["image"]
+        yoshi_width = images["yoshi"]["width"]
+        yoshi_height = images["yoshi"]["height"]
+        super().__init__(canvas, x, y, hspd, vspd, yoshi_image, yoshi_width, yoshi_height)
 # make space for some balls lol 
 balls = []
 
@@ -103,6 +124,23 @@ def createBalls():
         hspd = random.uniform(-5, 5)
         vspd = random.uniform(-5, 5)
         balls.append(Mario(canvas, x, y, hspd, vspd))
+    
+    # create Warios
+    for _ in range(numWario):
+        x = random.uniform(images["wario"]["width"], width - images["wario"]["width"])
+        y = random.uniform(images["wario"]["height"], height - images["wario"]["height"])
+        hspd = random.uniform(-5, 5)
+        vspd = random.uniform(-5, 5)
+        balls.append(Wario(canvas, x, y, hspd, vspd))
+        
+    # create Yoshis
+    for _ in range(numYoshi):
+        x = random.uniform(images["yoshi"]["width"], width - images["yoshi"]["width"])
+        y = random.uniform(images["yoshi"]["height"], height - images["yoshi"]["height"])
+        hspd = random.uniform(-5, 5)
+        vspd = random.uniform(-5, 5)
+        balls.append(Yoshi(canvas, x, y, hspd, vspd))
+    
 
 # place the ball in the canvas
 def draw():
