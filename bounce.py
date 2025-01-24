@@ -3,6 +3,7 @@ import random
 import os
 import sys
 
+# for use with creating a sharable .exe with pyinstaller
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
@@ -19,9 +20,9 @@ window.iconbitmap(resource_path("myicon.ico"))
 width = 480
 height = 480
 numLuigi = 1
-numMario = 50
-numWario = 50
-numYoshi = 30
+numMario = 150
+numWario = 75
+numYoshi = 50
 msBetweenFrames = 15
 
 # creates place for balls to bounce within the window
@@ -108,6 +109,8 @@ class Yoshi(Ball):
 balls = []
 
 # create balls for each character
+# the sign of hspd/vspd indicates direction,
+# distance from 0 indicates speed
 def createBalls():
     # create Luigi(s) first, so he is on the bottom "layer" and harder to spot
     for _ in range(numLuigi):
