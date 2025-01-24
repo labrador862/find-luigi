@@ -18,7 +18,8 @@ window.iconbitmap(resource_path("myicon.ico"))
 # size variables, change to whatever
 width = 480
 height = 480
-numBalls = 100
+numMario = 10
+numLuigi = 1
 msBetweenFrames = 15
 
 # creates place for balls to bounce within the window
@@ -26,51 +27,89 @@ canvas = tk.Canvas(window, width=width, height=height)
 canvas['bg'] = "black"
 canvas.pack(fill=tk.BOTH, expand=1)
 
-# image file (.png) to use as balls 
-ball_image_path = resource_path("luigi.png")
-ball_image = tk.PhotoImage(file=ball_image_path)
-image_width = ball_image.width()    # gets width and height of used image
-image_height = ball_image.height()  # to improve bounce mechanics
+# create dictionary to hold image data
+images = {
+    "mario": {
+        "image": tk.PhotoImage(file=resource_path("mario.png")),
+    },
+    "luigi": {
+        "image": tk.PhotoImage(file=resource_path("luigi.png")),
+    }
+}
+
+# add image sizes to dictionary
+# image width and height are 
+# important for bounce mechanics
+for key in images:
+    img = images[key]["image"]
+    images[key]["width"] = img.width()
+    images[key]["height"] = img.height()
 
 class Ball:
-    def __init__(self, canvas, x, y, vspd, hspd, image):
+    def __init__(self, canvas, x, y, vspd, hspd, image, image_width, image_height):
         self.x = x          # x coordinate
         self.y = y          # y coordinate
         self.hspd = hspd    # horizontal speed
         self.vspd = vspd    # vertical speed
         self.image = image  # .png to represent a ball
-        
-        self.image_instance = canvas.create_image(self.x, self.y, image = ball_image)
+        self.image_width = image_width    # width of specific .png
+        self.image_height = image_height  # height of specific .png
+        self.image_instance = canvas.create_image(self.x, self.y, image = self.image)
     
     # updates ball position     
-    def update(self, canvas):
+    def update(self):
         self.x += self.hspd # x coordinate changes in accordance with the horizontal speed
         self.y += self.vspd # y coordinate changes in accordance with the vertical speed
         canvas.coords(self.image_instance, self.x, self.y)
         
         # if the ball hits the edge of the window,
         # reverse its horizontal or vertical direction
-        if(self.x < 0 + image_width / 2 or self.x > width - image_width / 2): 
+        if(self.x < 0 + self.image_width / 2 or self.x > width - self.image_width / 2): 
             self.hspd *= -1
-        if(self.y < 0 + image_height / 2 or self.y > height - image_height / 2):
+        if(self.y < 0 + self.image_height / 2 or self.y > height - self.image_height / 2):
             self.vspd *= -1 
+            
+class Mario(Ball):
+    def __init__(self, canvas, x, y, hspd, vspd):
+        mario_image = images["mario"]["image"]
+        mario_width = images["mario"]["width"]
+        mario_height = images["mario"]["height"]
+        super().__init__(canvas, x, y, hspd, vspd, mario_image, mario_width, mario_height)
+
+class Luigi(Ball):
+    def __init__(self, canvas, x, y, hspd, vspd):
+        luigi_image = images["luigi"]["image"]
+        luigi_width = images["luigi"]["width"]
+        luigi_height = images["luigi"]["height"]
+        super().__init__(canvas, x, y, hspd, vspd, luigi_image, luigi_width, luigi_height)
 
 # make space for some balls lol 
 balls = []
 
-# create specified number of balls
-for i in range(0, numBalls):
-    x = random.uniform(image_width, width - image_width)    # ensures ball spawns within the borders
-    y = random.uniform(image_height, height - image_height) # ^^
-    vspd = random.uniform(-5, 5)                            # randomly chooses initial speed and direction
-    hspd = random.uniform(-5, 5)                            # ^^
-    balls.append(Ball(canvas, x, y, vspd, hspd, ball_image))# adds ball to list of balls
+# create balls for each character
+def createBalls():
+    # create Luigi(s) first, so he is on the bottom "layer" and harder to spot
+    for _ in range(numLuigi):
+        x = random.uniform(images["luigi"]["width"], width - images["luigi"]["width"])
+        y = random.uniform(images["luigi"]["height"], height - images["luigi"]["height"])
+        hspd = random.uniform(-5, 5)
+        vspd = random.uniform(-5, 5)
+        balls.append(Luigi(canvas, x, y, hspd, vspd))
+        
+    # create Marios
+    for _ in range(numMario):
+        x = random.uniform(images["mario"]["width"], width - images["mario"]["width"])
+        y = random.uniform(images["mario"]["height"], height - images["mario"]["height"])
+        hspd = random.uniform(-5, 5)
+        vspd = random.uniform(-5, 5)
+        balls.append(Mario(canvas, x, y, hspd, vspd))
 
 # place the ball in the canvas
 def draw():
     for ball in balls:
-        ball.update(canvas)              # update the balls' positions
+        ball.update()                    # update the balls' positions
     window.after(msBetweenFrames, draw)  # after a short delay
     
+createBalls()
 window.after(msBetweenFrames, draw)      # initial placement of all balls
 window.mainloop()
