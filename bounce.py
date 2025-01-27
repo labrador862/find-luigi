@@ -19,10 +19,6 @@ window.iconbitmap(resource_path("myicon.ico"))
 # size variables, change to whatever
 width = 480
 height = 480
-numLuigi = 1
-numMario = 50
-numWario = 35
-numYoshi = 25
 msBetweenFrames = 10 # has an effect on speed
 
 # creates place for balls to bounce within the window
@@ -31,28 +27,32 @@ canvas['bg'] = "black"
 canvas.pack(fill=tk.BOTH, expand=1)
 
 # create dictionary to hold image data
-images = {
-    "mario": {
-        "image": tk.PhotoImage(file=resource_path("mario.png")),
-    },
+characters = {
     "luigi": {
         "image": tk.PhotoImage(file=resource_path("luigi.png")),
+        "num": 1,
+    },
+    "mario": {
+        "image": tk.PhotoImage(file=resource_path("mario.png")),
+        "num": 50,
     },
     "wario": {
         "image": tk.PhotoImage(file=resource_path("wario.png")),
+        "num": 35,
     },
     "yoshi": {
         "image": tk.PhotoImage(file=resource_path("yoshi.png")),
+        "num": 25
     }
 }
 
-# add image sizes to dictionary
+# add image sizes to dictionary dynamically
 # image width and height are 
 # important for bounce mechanics
-for key in images:
-    img = images[key]["image"]
-    images[key]["width"] = img.width()
-    images[key]["height"] = img.height()
+for key in characters:
+    img = characters[key]["image"]
+    characters[key]["width"] = img.width()
+    characters[key]["height"] = img.height()
 
 class Ball:
     def __init__(self, canvas, x, y, vspd, hspd, image, image_width, image_height):
@@ -80,16 +80,16 @@ class Ball:
             
 class Mario(Ball):
     def __init__(self, canvas, x, y, hspd, vspd):
-        mario_image = images["mario"]["image"]
-        mario_width = images["mario"]["width"]
-        mario_height = images["mario"]["height"]
+        mario_image = characters["mario"]["image"]
+        mario_width = characters["mario"]["width"]
+        mario_height = characters["mario"]["height"]
         super().__init__(canvas, x, y, hspd, vspd, mario_image, mario_width, mario_height)
 
 class Luigi(Ball):
     def __init__(self, canvas, x, y, hspd, vspd):
-        luigi_image = images["luigi"]["image"]
-        luigi_width = images["luigi"]["width"]
-        luigi_height = images["luigi"]["height"]
+        luigi_image = characters["luigi"]["image"]
+        luigi_width = characters["luigi"]["width"]
+        luigi_height = characters["luigi"]["height"]
         super().__init__(canvas, x, y, hspd, vspd, luigi_image, luigi_width, luigi_height)
         
         # unique tag for luigi used for click detection
@@ -97,17 +97,31 @@ class Luigi(Ball):
         
 class Wario(Ball):
     def __init__(self, canvas, x, y, hspd, vspd):
-        wario_image = images["wario"]["image"]
-        wario_width = images["wario"]["width"]
-        wario_height = images["wario"]["height"]
+        wario_image = characters["wario"]["image"]
+        wario_width = characters["wario"]["width"]
+        wario_height = characters["wario"]["height"]
         super().__init__(canvas, x, y, hspd, vspd, wario_image, wario_width, wario_height)
 
 class Yoshi(Ball):
     def __init__(self, canvas, x, y, hspd, vspd):
-        yoshi_image = images["yoshi"]["image"]
-        yoshi_width = images["yoshi"]["width"]
-        yoshi_height = images["yoshi"]["height"]
+        yoshi_image = characters["yoshi"]["image"]
+        yoshi_width = characters["yoshi"]["width"]
+        yoshi_height = characters["yoshi"]["height"]
         super().__init__(canvas, x, y, hspd, vspd, yoshi_image, yoshi_width, yoshi_height)
+        
+# factory for creating ball objects
+class BallFactory:
+    def create_ball(self, canvas, character, x, y, hspd, vspd):
+        if character == "mario":
+            return Mario(canvas, x, y, hspd, vspd)
+        elif character == "luigi":
+            return Luigi(canvas, x, y, hspd, vspd)
+        elif character == "wario":
+            return Wario(canvas, x, y, hspd, vspd)
+        elif character == "yoshi":
+            return Yoshi(canvas, x, y, hspd, vspd)
+        else:
+            raise ValueError(f"Unknown character: {character}")
         
 # balls lol 
 balls = []
@@ -116,38 +130,24 @@ balls = []
 # the sign of hspd/vspd indicates direction,
 # distance from 0 indicates speed
 def createBalls():
-    # create Luigi(s) first, so he is on the bottom "layer" and harder to spot
-    for _ in range(numLuigi):
-        x = random.uniform(images["luigi"]["width"], width - images["luigi"]["width"])
-        y = random.uniform(images["luigi"]["height"], height - images["luigi"]["height"])
-        hspd = random.uniform(-2, 2)
-        vspd = random.uniform(-2, 2)
-        balls.append(Luigi(canvas, x, y, hspd, vspd))
-        
-    # create Marios
-    for _ in range(numMario):
-        x = random.uniform(images["mario"]["width"], width - images["mario"]["width"])
-        y = random.uniform(images["mario"]["height"], height - images["mario"]["height"])
-        hspd = random.uniform(-5, 5)
-        vspd = random.uniform(-5, 5)
-        balls.append(Mario(canvas, x, y, hspd, vspd))
-    
-    # create Warios
-    for _ in range(numWario):
-        x = random.uniform(images["wario"]["width"], width - images["wario"]["width"])
-        y = random.uniform(images["wario"]["height"], height - images["wario"]["height"])
-        hspd = random.uniform(-5, 5)
-        vspd = random.uniform(-5, 5)
-        balls.append(Wario(canvas, x, y, hspd, vspd))
-        
-    # create Yoshis
-    for _ in range(numYoshi):
-        x = random.uniform(images["yoshi"]["width"], width - images["yoshi"]["width"])
-        y = random.uniform(images["yoshi"]["height"], height - images["yoshi"]["height"])
-        hspd = random.uniform(-5, 5)
-        vspd = random.uniform(-5, 5)
-        balls.append(Yoshi(canvas, x, y, hspd, vspd))
-    
+    factory = BallFactory()  # instantiate the factory
+
+    for character, data in characters.items():
+        for _ in range(data["num"]):
+            x = random.uniform(data["width"], width - data["width"])
+            y = random.uniform(data["height"], height - data["height"])
+
+            # aet speed based on character, Luigi is uniquely slow
+            if character == "luigi":
+                hspd = random.uniform(-2, 2)
+                vspd = random.uniform(-2, 2)
+            else:
+                hspd = random.uniform(-5, 5)
+                vspd = random.uniform(-5, 5)
+
+            # use factory to create balls
+            ball = factory.create_ball(canvas, character, x, y, hspd, vspd)
+            balls.append(ball)
 
 # place the ball in the canvas
 def draw():
@@ -160,7 +160,7 @@ def on_luigi_click(event):
     if "luigi" in canvas.gettags(clicked):
         print("You found Luigi!")
         
-        # display victory message (image)
+        # display victory message (image) in the center
         youwin_image = tk.PhotoImage(file=resource_path("youwin.png"))
         canvas.image = youwin_image
         canvas.create_image(width // 2, height // 2, anchor = tk.CENTER, image = youwin_image)
