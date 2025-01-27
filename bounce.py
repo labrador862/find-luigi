@@ -16,17 +16,18 @@ window = tk.Tk()
 window.title("Find Luigi!")
 window.iconbitmap(resource_path("myicon.ico"))
 
-# size variables, change to whatever
+# window variables, change to whatever
 width = 480
 height = 480
-msBetweenFrames = 10 # has an effect on speed
+msBetweenFrames = 10 # has an effect on perceived speed,
+                     # lower is faster
 
 # creates place for balls to bounce within the window
 canvas = tk.Canvas(window, width=width, height=height)
 canvas['bg'] = "black"
 canvas.pack(fill=tk.BOTH, expand=1)
 
-# create dictionary to hold image data
+# dictionary to hold character data
 characters = {
     "luigi": {
         "image": tk.PhotoImage(file=resource_path("luigi.png")),
@@ -78,13 +79,6 @@ class Ball:
         if(self.y < 0 + self.image_height / 2 or self.y > height - self.image_height / 2):
             self.vspd *= -1 
             
-class Mario(Ball):
-    def __init__(self, canvas, x, y, hspd, vspd):
-        mario_image = characters["mario"]["image"]
-        mario_width = characters["mario"]["width"]
-        mario_height = characters["mario"]["height"]
-        super().__init__(canvas, x, y, hspd, vspd, mario_image, mario_width, mario_height)
-
 class Luigi(Ball):
     def __init__(self, canvas, x, y, hspd, vspd):
         luigi_image = characters["luigi"]["image"]
@@ -93,7 +87,14 @@ class Luigi(Ball):
         super().__init__(canvas, x, y, hspd, vspd, luigi_image, luigi_width, luigi_height)
         
         # unique tag for luigi used for click detection
-        canvas.itemconfig(self.image_instance, tags="luigi")
+        canvas.itemconfig(self.image_instance, tags="luigi")            
+            
+class Mario(Ball):
+    def __init__(self, canvas, x, y, hspd, vspd):
+        mario_image = characters["mario"]["image"]
+        mario_width = characters["mario"]["width"]
+        mario_height = characters["mario"]["height"]
+        super().__init__(canvas, x, y, hspd, vspd, mario_image, mario_width, mario_height)
         
 class Wario(Ball):
     def __init__(self, canvas, x, y, hspd, vspd):
@@ -112,10 +113,10 @@ class Yoshi(Ball):
 # factory for creating ball objects
 class BallFactory:
     def create_ball(self, canvas, character, x, y, hspd, vspd):
-        if character == "mario":
-            return Mario(canvas, x, y, hspd, vspd)
-        elif character == "luigi":
+        if character == "luigi":
             return Luigi(canvas, x, y, hspd, vspd)
+        elif character == "mario":
+            return Mario(canvas, x, y, hspd, vspd)
         elif character == "wario":
             return Wario(canvas, x, y, hspd, vspd)
         elif character == "yoshi":
@@ -137,7 +138,8 @@ def createBalls():
             x = random.uniform(data["width"], width - data["width"])
             y = random.uniform(data["height"], height - data["height"])
 
-            # aet speed based on character, Luigi is uniquely slow
+            # get speed based on character, Luigi is
+            # uniquely slow compared to the others
             if character == "luigi":
                 hspd = random.uniform(-2, 2)
                 vspd = random.uniform(-2, 2)
