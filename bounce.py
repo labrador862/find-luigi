@@ -3,7 +3,7 @@ import random
 import os
 import sys
 
-# for use with creating a sharable .exe with pyinstaller
+# for use with creating a shareable .exe with pyinstaller
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
@@ -17,13 +17,13 @@ window.title("Find Luigi!")
 window.iconbitmap(resource_path("myicon.ico"))
 
 # window variables, change to whatever
-width = 480
-height = 480
+windowWidth = 480
+windowHeight = 480
 msBetweenFrames = 10 # has an effect on perceived speed,
                      # lower is faster
 
 # creates place for balls to bounce within the window
-canvas = tk.Canvas(window, width=width, height=height)
+canvas = tk.Canvas(window, width=windowWidth, height=windowHeight)
 canvas['bg'] = "black"
 canvas.pack(fill=tk.BOTH, expand=1)
 
@@ -35,7 +35,7 @@ characters = {
     },
     "mario": {
         "image": tk.PhotoImage(file=resource_path("mario.png")),
-        "num": 50,
+        "num": 35,
     },
     "wario": {
         "image": tk.PhotoImage(file=resource_path("wario.png")),
@@ -43,7 +43,7 @@ characters = {
     },
     "yoshi": {
         "image": tk.PhotoImage(file=resource_path("yoshi.png")),
-        "num": 25
+        "num": 35
     }
 }
 
@@ -57,26 +57,26 @@ for key in characters:
 
 class Ball:
     def __init__(self, canvas, x, y, vspd, hspd, image, image_width, image_height):
-        self.x = x          # x coordinate
-        self.y = y          # y coordinate
-        self.hspd = hspd    # horizontal speed
-        self.vspd = vspd    # vertical speed
+        self.x = x          # centermost x coordinate
+        self.y = y          # centermost y coordinate
+        self.hspd = hspd    # horizontal speed, measured in pixels
+        self.vspd = vspd    # vertical speed, measured in pixels
         self.image = image  # .png to represent a ball
-        self.image_width = image_width    # width of specific .png
-        self.image_height = image_height  # height of specific .png
+        self.image_width = image_width
+        self.image_height = image_height
         self.image_instance = canvas.create_image(self.x, self.y, image = self.image)
     
     # updates ball position     
-    def update(self):
+    def update(self) -> None:
         self.x += self.hspd # x coordinate changes in accordance with the horizontal speed
         self.y += self.vspd # y coordinate changes in accordance with the vertical speed
         canvas.coords(self.image_instance, self.x, self.y)
         
         # if the ball hits the edge of the window,
         # reverse its horizontal or vertical direction
-        if(self.x < 0 + self.image_width / 2 or self.x > width - self.image_width / 2): 
+        if(self.x < 0 + self.image_width / 2 or self.x > windowWidth - self.image_width / 2): 
             self.hspd *= -1
-        if(self.y < 0 + self.image_height / 2 or self.y > height - self.image_height / 2):
+        if(self.y < 0 + self.image_height / 2 or self.y > windowHeight - self.image_height / 2):
             self.vspd *= -1 
             
 class Luigi(Ball):
@@ -112,7 +112,7 @@ class Yoshi(Ball):
         
 # factory for creating ball objects
 class BallFactory:
-    def create_ball(self, canvas, character, x, y, hspd, vspd):
+    def create_ball(self, canvas, character, x, y, hspd, vspd) -> Ball:
         if character == "luigi":
             return Luigi(canvas, x, y, hspd, vspd)
         elif character == "mario":
@@ -130,13 +130,13 @@ balls = []
 # create balls for each character
 # the sign of hspd/vspd indicates direction,
 # distance from 0 indicates speed
-def createBalls():
+def createBalls() -> None:
     factory = BallFactory()  # instantiate the factory
 
     for character, data in characters.items():
         for _ in range(data["num"]):
-            x = random.uniform(data["width"], width - data["width"])
-            y = random.uniform(data["height"], height - data["height"])
+            x = random.uniform(data["width"], windowWidth - data["width"])
+            y = random.uniform(data["height"], windowHeight - data["height"])
 
             # get speed based on character, Luigi is
             # uniquely slow compared to the others
@@ -152,12 +152,12 @@ def createBalls():
             balls.append(ball)
 
 # place the ball in the canvas
-def draw():
+def draw() -> None:
     for ball in balls:
         ball.update()                    # update the balls' positions
     window.after(msBetweenFrames, draw)  # after a short delay
 
-def on_luigi_click(event):
+def on_luigi_click(event) -> None:
     clicked = canvas.find_withtag("current") # find any tagged items under the click
     if "luigi" in canvas.gettags(clicked):
         print("You found Luigi!")
@@ -165,9 +165,9 @@ def on_luigi_click(event):
         # display victory message (image) in the center
         youwin_image = tk.PhotoImage(file=resource_path("youwin.png"))
         canvas.image = youwin_image
-        canvas.create_image(width // 2, height // 2, anchor = tk.CENTER, image = youwin_image)
+        canvas.create_image(windowWidth // 2, windowHeight // 2, anchor = tk.CENTER, image = youwin_image)
 
 canvas.tag_bind("luigi", "<Button-1>", on_luigi_click) # if the luigi tag is left clicked, call on_luigi_click()
 createBalls()
-window.after(msBetweenFrames, draw)      # initial placement of all balls
+window.after(msBetweenFrames, draw) # initial placement of all balls
 window.mainloop()
